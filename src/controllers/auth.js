@@ -13,13 +13,13 @@ class AuthController {
             const tokens = await AuthService.signIn(id, password, req);
 
             res.status(201).json({
-                message: 'User is singed up',
+                message: 'User was singed up',
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken,
                 user: { id: user.id }
             });
         } catch (error) {
-            console.error("Signup error: ", error);
+            console.warn("signup error: ", error);
             res.status(400).json({
                 error: error.message
             })
@@ -39,14 +39,14 @@ class AuthController {
             const tokens = await AuthService.signIn(id, password, req);
 
             res.json({
-                message: 'Hello !',
+                message: 'User was signed in',
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken,
                 user: tokens.user
             });
 
         } catch (error) {
-            console.error('SignIn error:', error);
+            console.warn('signIn error:', error);
             res.status(401).json({
                 error: error.message
             });

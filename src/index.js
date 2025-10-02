@@ -14,7 +14,7 @@ app.use('/', authRoutes);
 
 app.get('/', (req, res) => {
     res.json({
-        message: 'File Service API is running!',
+        message: 'file service API is running',
         endpoints: {
             signup: 'POST /signup',
             signin: 'POST /signin'

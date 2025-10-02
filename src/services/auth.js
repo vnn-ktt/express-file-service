@@ -13,7 +13,7 @@ class AuthService {
         });
 
         if (existingUser) {
-            throw new Error('Пользователь с таким ID уже существует');
+            throw new Error('User with ID already exists');
         }
 
         const hashedPassword = await bcrypt.hash(password, 12);
@@ -60,8 +60,8 @@ class AuthService {
         };
     }
     static isValidEmailOrPhone(id) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\d{10,15}$/;
+        const emailRegex = /^(?!\.)(?!.*\.\.)([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/; //strict
+        const phoneRegex = /^\+[1-9]{1,4}[\s\-]?\(?[0-9]{1,5}\)?[\s\-]?[0-9]{1,10}[\s\-]?[0-9]{1,10}$/; //international
         return emailRegex.test(id) || phoneRegex.test(id);
     }
 }
