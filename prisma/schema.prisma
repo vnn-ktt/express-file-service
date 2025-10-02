@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  //shadowDatabaseUrl = env("SHADOW_DB_URL")
+}
+
+model User {
+  id        String   @id
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tokens Token[]
+  files  File[]
+
+  @@map("users")
+}
+
+model Token {
+  id           String   @id @default(cuid())
+  userId       String
+  refreshToken String   @db.VarChar(500)
+  deviceId     String
+  isBlocked    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, deviceId])
+  @@map("tokens")
+}
+
+model File {
+  id           Int      @id @default(autoincrement())
+  filename     String // Уникальное имя файла в системе
+  originalName String // Оригинальное имя файла
+  extension    String
+  mimeType     String
+  size         Int // в байтах
+  uploadDate   DateTime @default(now())
+  userId       String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("files")
+}
