@@ -5,14 +5,8 @@ class AuthMiddleware {
     static async verifyToken(req, res, next) {
         try {
             const authHeader = req.headers["authorization"];
-            if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                return res.status(401).json({
-                    error: 'access token is missing',
-                    details: 'use format: \'Bearer <token>\''
-                })
-            }
+            const token = JWTUtils.extractTokenFromHeader(authHeader);
 
-            const token = authHeader.split(' ')[1];
             if (!token) {
                 return res.status(401).json({
                     error: 'access token is missing'
@@ -20,6 +14,7 @@ class AuthMiddleware {
             }
 
             const decoded = JWTUtils.verifyAccessToken(token);
+            console.log(decoded);
             if(!decoded) {
                 return res.status(401).json({
                     error: 'access token is different or expired'
@@ -39,17 +34,17 @@ class AuthMiddleware {
             }
 
             const deviceId = JWTUtils.generateDeviceId(req);
-            const blockedToken = await prisma.token.findFirst({
+            const activeToken = await prisma.token.findFirst({
                     where: {
                         id: decoded.userId,
                         deviceId: deviceId,
-                        isBlocked: true
+                        isBlocked: false
                     }
                 }
             );
-            if (blockedToken) {
+            if (!activeToken) {
                 return res.status(401).json({
-                    error: 'token blocked',
+                    error: 'session expired',
                     details: 'sign in again'
                 });
             }
@@ -68,7 +63,31 @@ class AuthMiddleware {
         }
     }
     static async optionalAuth(req, res, next) {
+        try {
+            const authHeader = req.headers["authorization"];
+            const token = JWTUtils.extractTokenFromHeader(authHeader);
 
+            if (token) {
+                const decoded = JWTUtils.verifyAccessToken(token);
+
+                if (decoded) {
+                    const user = await prisma.user.findUnique({
+                        where: { id: decoded.userId }
+                    });
+
+                    if (user) {
+                        req.user = {
+                            id: user.id,
+                            userId: user.id
+                        }
+                    }
+                }
+            }
+
+            next();
+        } catch (error) {
+            next();
+        }
     }
 }
 

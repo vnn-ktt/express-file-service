@@ -4,10 +4,13 @@ const crypto = require("crypto");
 
 class JWTUtils {
     static generateAccessToken(userId) {
-        return jwt.sign(
-        {userId, type: 'access'},
+        return jwt.sign({
+            userId,
+            type: 'access',
+            timestamp: Date.now()
+        },
         process.env.JWT_SECRET,
-        {expiresIn: '10m'}
+        { expiresIn: '10m' }
         );
     }
 
@@ -15,9 +18,13 @@ class JWTUtils {
         const tokenId = uuidv4();
         return {
             token: jwt.sign(
-            {tokenId, type: 'refresh'},
+            {
+                tokenId,
+                type: 'refresh',
+                timestamp: Date.now()
+            },
             process.env.JWT_REFRESH_SECRET,
-            {expiresIn: '7d'}
+            { expiresIn: '7d'}
             ),
             tokenId
         }
@@ -27,7 +34,13 @@ class JWTUtils {
         try {
             return jwt.verify(token, process.env.JWT_SECRET);
         } catch (error) {
-            return null;
+            if (error.name === 'TokenExpiredError') {
+                throw new Error('ACCESS_TOKEN_EXPIRED');
+            } else if (error.name === 'JsonWebTokenError') {
+                throw new Error('INVALID_ACCESS_TOKEN');
+            } else {
+                throw new Error('TOKEN_VERIFICATION_FAILED');
+            }
         }
     }
 
@@ -35,7 +48,13 @@ class JWTUtils {
         try {
             return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
         } catch (error) {
-            return null;
+            if (error.name === 'TokenExpiredError') {
+                throw new Error('REFRESH_TOKEN_EXPIRED');
+            } else if (error.name === 'JsonWebTokenError') {
+                throw new Error('INVALID_REFRESH_TOKEN');
+            } else {
+                throw new Error('REFRESH_TOKEN_VERIFICATION_FAILED');
+            }
         }
     }
 
@@ -46,6 +65,13 @@ class JWTUtils {
             .createHash('md5')
             .update(userAgent + ip)
             .digest('hex');
+    }
+
+    static extractTokenFromHeader(authHeader) {
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return null;
+        }
+        return authHeader.split(' ')[1];
     }
 }
 
