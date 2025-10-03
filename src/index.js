@@ -16,6 +16,7 @@ app.use('/uploads', express.static('uploads'));
 
 /* public routes */
 app.use('/', authRoutes);
+
 /* basic routes */
 app.get('/', (req, res) => {
     res.json({
@@ -33,9 +34,10 @@ app.get('/', (req, res) => {
         }
     });
 });
-/* protected routes */
+
+/*protect routes */
 app.use('/', userRoutes);
-/* 404 */
+
 app.use((req, res) => {
     res.status(404).json({
         error: 'route is not found',
@@ -55,10 +57,3 @@ app.listen(PORT, () => {
     console.log(`   GET  http://localhost:${PORT}/logout`);
     console.log(`   GET  http://localhost:${PORT}/logout/all`);
 });
-
-/*
-* {
-    "id": "89993159090",
-    "password": "12345"
-}
-* */

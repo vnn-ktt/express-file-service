@@ -31,10 +31,10 @@ class UserController {
             const deviceId = JWTUtils.generateDeviceId(req);
             await prisma.token.updateMany({
                 where: {
-                   userId: req.user.id,
-                   deviceId: deviceId,
-                    isBlocked: false
-                },
+                       userId: req.user.id,
+                       deviceId: deviceId,
+                       isBlocked: false
+                    },
                 data: {
                    isBlocked: true
                 }

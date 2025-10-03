@@ -36,11 +36,11 @@ model Token {
 
 model File {
   id           Int      @id @default(autoincrement())
-  filename     String // Уникальное имя файла в системе
-  originalName String // Оригинальное имя файла
+  filename     String // unique filename in system
+  originalName String // filename
   extension    String
   mimeType     String
-  size         Int // в байтах
+  size         Int // bytes
   uploadDate   DateTime @default(now())
   userId       String
 

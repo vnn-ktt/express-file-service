@@ -7,7 +7,6 @@ class JWTUtils {
         return jwt.sign({
             userId,
             type: 'access',
-            timestamp: Date.now()
         },
         process.env.JWT_SECRET,
         { expiresIn: '10m' }
@@ -18,13 +17,9 @@ class JWTUtils {
         const tokenId = uuidv4();
         return {
             token: jwt.sign(
-            {
-                tokenId,
-                type: 'refresh',
-                timestamp: Date.now()
-            },
-            process.env.JWT_REFRESH_SECRET,
-            { expiresIn: '7d'}
+                { tokenId,  type: 'refresh',},
+                process.env.JWT_REFRESH_SECRET,
+                { expiresIn: '7d'}
             ),
             tokenId
         }

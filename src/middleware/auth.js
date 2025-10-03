@@ -14,7 +14,6 @@ class AuthMiddleware {
             }
 
             const decoded = JWTUtils.verifyAccessToken(token);
-            console.log(decoded);
             if(!decoded) {
                 return res.status(401).json({
                     error: 'access token is different or expired'
@@ -36,7 +35,7 @@ class AuthMiddleware {
             const deviceId = JWTUtils.generateDeviceId(req);
             const activeToken = await prisma.token.findFirst({
                     where: {
-                        id: decoded.userId,
+                        userId: decoded.userId,
                         deviceId: deviceId,
                         isBlocked: false
                     }
