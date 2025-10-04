@@ -1,19 +1,19 @@
 const fs = require('fs').promises;
 const path = require('path');
-const prisma = require('prisma');
+const prisma = require("../services/prisma");
 
 class FileService {
     static async uploadFile(file, userId) {
         try {
-            const [fileExtension, uniqueFilename, filePath] = this.generateFileParams(file);
-            await fs.rename(filePath, uniqueFilename);
+            const { fileExtension, uniqueFilename, filePath} = this.generateFileParams(file);
+            await fs.rename(file.path, filePath);
 
             return await prisma.file.create({
                 data: {
                     filename: uniqueFilename,
                     originalName: file.originalname,
                     extension: fileExtension.toLowerCase(),
-                    mimeType: file.mimeType,
+                    mimeType: file.mimetype,
                     size: file.size,
                     userId: userId
                 }
@@ -35,7 +35,7 @@ class FileService {
                 where: { userId },
                 skip: skip,
                 take: pageSize,
-                orderBy: { uploadData: 'desc' },
+                orderBy: { uploadDate: 'desc' },
                 select: {
                     id: true,
                     filename: true,
@@ -43,7 +43,7 @@ class FileService {
                     extension: true,
                     mimeType: true,
                     size: true,
-                    uploadData: true
+                    uploadDate: true
                 },
             }),
             prisma.file.count({
@@ -114,7 +114,7 @@ class FileService {
             throw new Error('previous file not found');
         }
 
-        const [fileExtension, uniqueFilename, newFilePath] = this.generateFileParams(previousFile);
+        const { fileExtension, uniqueFilename, filePath: newFilePath } = this.generateFileParams(previousFile);
 
         await fs.rename(newFile.path, newFilePath);
 
@@ -125,14 +125,14 @@ class FileService {
             console.error('error deleting old file: ', error);
         }
 
-        return await prisma.file.update({
+        return prisma.file.update({
             where: { id: parseInt(fileId) },
             data: {
                 filename: uniqueFilename,
                 originalName: newFile.originalname,
                 extension: fileExtension.toLowerCase(),
                 mimeType: newFile.mimetype,
-                size: newFile.size
+                size: newFile.size,
             }
         });
     }

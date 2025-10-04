@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-const prisma = require("./prisma");
+const prisma = require("../services/prisma");
 const JWTUtils = require("../utils/jwt");
 
 class AuthService {

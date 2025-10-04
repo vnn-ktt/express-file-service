@@ -8,21 +8,22 @@ const router = express.Router();
 router.use(AuthMiddleware.verifyToken);
 
 router.post('/upload',
-    UploadMiddleware.single,
-    UploadMiddleware.handleUploadErrors,
+    UploadMiddleware.single('file'),
+    UploadMiddleware.handleUploadErrors.bind(UploadMiddleware),
+    UploadMiddleware.validateFile.bind(UploadMiddleware),
     FileController.uploadFile
+);
+
+router.put('/update/:id',
+    UploadMiddleware.single('file'),
+    UploadMiddleware.handleUploadErrors.bind(UploadMiddleware),
+    UploadMiddleware.validateFile.bind(UploadMiddleware),
+    FileController.updateFile
 );
 
 router.get('/list', FileController.getFilesList);
 router.get('/:id', FileController.getFileInfo);
 router.get('/download/:id', FileController.downloadFile);
-
-router.put('/update/:id',
-    UploadMiddleware.single,
-    UploadMiddleware.handleUploadErrors,
-    FileController.updateFile
-);
-
 router.delete('/delete/:id', FileController.deleteFile);
 
 module.exports = router;

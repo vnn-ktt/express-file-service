@@ -1,6 +1,6 @@
 const FileService  = require('../services/file');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs').promises;
 
 class FileController {
     static async uploadFile(req, res) {
