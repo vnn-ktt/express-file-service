@@ -114,6 +114,8 @@ class FileService {
             throw new Error('previous file not found');
         }
 
+        console.log(previousFile);
+
         const { fileExtension, uniqueFilename, filePath: newFilePath } = this.generateFileParams(previousFile);
 
         await fs.rename(newFile.path, newFilePath);
@@ -152,7 +154,7 @@ class FileService {
     }
 
     static generateFileParams(file) {
-        const fileExtension = path.extname(file.originalname);
+        const fileExtension = path.extname(file.originalName);
         const uniqueFilename =
             `${Date.now()}-${Math.random().toString(36).substring(2)}${fileExtension}`;
         const filePath = path.join(
