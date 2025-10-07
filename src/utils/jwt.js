@@ -68,6 +68,15 @@ class JWTUtils {
         }
         return authHeader.split(' ')[1];
     }
+
+    static getTokenExpiration(token) {
+        try {
+            const decoded = jwt.decode(token);
+            return decoded ? decoded.exp * 1000 : null;
+        } catch {
+            return null;
+        }
+    }
 }
 
 module.exports = JWTUtils;

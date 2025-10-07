@@ -59,6 +59,92 @@ class AuthService {
             user: { id: user.id }
         };
     }
+    static async refreshToken(refreshToken, req) {
+        try {
+            const decoded = JWTUtils.verifyRefreshToken(refreshToken);
+
+            if (!decoded) {
+                console.warn('failed to verify refresh token');
+                return;
+            }
+
+            const tokenRecord = await prisma.token.findFirst({
+                where: {
+                    refreshToken: decoded.tokenId,
+                    isBlocked: false
+                },
+                include: {
+                    user: true
+                }
+            });
+
+            if (!tokenRecord) {
+                console.warn('refresh token not found or blocked');
+                return''
+            }
+
+            const currentDeviceId = JWTUtils.generateDeviceId(req);
+            if (tokenRecord.deviceId !== currentDeviceId) {
+                console.warn(`device ID mismatch for user ${tokenRecord.userId}`);
+                return;
+            }
+
+            const userId = tokenRecord.userId;
+
+            const newAccessToken = JWTUtils.generateAccessToken(userId);
+            const { token: newRefreshToken, tokenId: newTokenId } = JWTUtils.generateRefreshToken();
+
+            await prisma.token.update({
+                where: {
+                    id: tokenRecord.id
+                },
+                data: {
+                    refreshToken: newRefreshToken,
+                    createdAt: new Date()
+                }
+            });
+
+            return {
+                accessToken: newAccessToken,
+                refreshToken: newRefreshToken,
+                user: { id: userId }
+            };
+        } catch (error) {
+            console.warn('refresh tokens error:', error);
+            // if a verification error, note this token as blocked
+            if (error.message.includes('Invalid') || error.message.includes('expired')) {
+                try {
+                    const decoded = JWTUtils.verifyRefreshToken(refreshToken);
+                    if (decoded && decoded.tokenId) {
+                        await prisma.token.updateMany({
+                            where: { refreshToken: decoded.tokenId },
+                            data: { isBlocked: true }
+                        });
+                    }
+                } catch (error) {
+                    console.error('error blocking invalid token:', error);
+                }
+            }
+            throw error;
+        }
+    }
+    static async cleanExpiredTokens() {
+        try {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const result = await prisma.token.deleteMany({
+                where: {
+                    createdAt: {
+                        lt: thirtyDaysAgo
+                    }
+                }
+            });
+            return result.count;
+        } catch (error) {
+            console.error('token cleanup error:', error);
+            return 0;
+        }
+    }
     static isValidEmailOrPhone(id) {
         const emailRegex = /^(?!\.)(?!.*\.\.)([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/; //strict
         const phoneRegex = /^\+[1-9]{1,4}[\s\-]?\(?[0-9]{1,5}\)?[\s\-]?[0-9]{1,10}[\s\-]?[0-9]{1,10}$/; //international
