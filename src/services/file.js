@@ -22,7 +22,7 @@ class FileService {
             try {
                 await fs.unlink(file.path); //delete a temporary file with error
             } catch (unlinkError) {
-                console.error('error deleting temp file: ', unlinkError);
+                console.warn('error deleting temp file: ', unlinkError);
             }
             throw error;
         }
@@ -114,8 +114,6 @@ class FileService {
             throw new Error('previous file not found');
         }
 
-        console.log(previousFile);
-
         const { fileExtension, uniqueFilename, filePath: newFilePath } = this.generateFileParams(previousFile);
 
         await fs.rename(newFile.path, newFilePath);
@@ -124,7 +122,7 @@ class FileService {
             const oldFilePath = path.join(process.env.UPLOAD_PATH || './uploads', previousFile.filename);
             await fs.unlink(oldFilePath);
         } catch (error) {
-            console.error('error deleting old file: ', error);
+            console.warn('error deleting old file: ', error);
         }
 
         return prisma.file.update({

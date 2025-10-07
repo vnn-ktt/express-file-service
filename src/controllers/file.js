@@ -180,7 +180,7 @@ class FileController {
             });
 
         } catch (error) {
-            console.error('deleting file error: ', error);
+            console.warn('deleting file error: ', error);
             res.status(500).json({
                 error: 'deleting file error',
                 details: error.message

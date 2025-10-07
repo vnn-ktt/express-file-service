@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const fileRoutes = require('./routes/file');
+const AutoRefreshMiddleware = require('./middleware/autoRefresh');
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
+app.use(AutoRefreshMiddleware.autoRefresh);
 
 /* public routes */
 app.use('/', authRoutes);
@@ -25,7 +27,8 @@ app.get('/', (req, res) => {
         endpoints: {
             public: {
                 signup: 'POST /signup',
-                signin: 'POST /signin'
+                signin: 'POST /signin',
+                refresh: 'POST /signin/new_token'
             },
             protected: {
                 user: {
@@ -64,6 +67,7 @@ app.listen(PORT, () => {
     console.log(`   GET  http://localhost:${PORT}/ - API info`);
     console.log(`   POST http://localhost:${PORT}/signup - User registration`);
     console.log(`   POST http://localhost:${PORT}/signin - User login`);
+    console.log(`   POST http://localhost:${PORT}/signin/new_token - Generate new token`);
     console.log(``);
     console.log(`🔒 PROTECTED ENDPOINTS (require Bearer token):`);
     console.log(`   👤 USER ENDPOINTS:`);

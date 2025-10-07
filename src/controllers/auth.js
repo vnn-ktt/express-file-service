@@ -52,6 +52,45 @@ class AuthController {
             });
         }
     }
+
+    static async refreshToken(req, res) {
+        try {
+            const {refresh_token} = req.body;
+            if (!refresh_token) return res.status(400).json({
+                error: 'refresh token is required',
+                details: 'provide refresh token in the body of req',
+            })
+
+            const tokens = await AuthService.refreshToken(refresh_token, req);
+            res.json({
+                message: 'tokens refreshed successfully',
+                accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken,
+                user: tokens.user
+            });
+        } catch (error) {
+            console.warn('refresh tokens error:', error.message);
+
+            let statusCode = 401;
+            let errorMessage = error.message;
+
+            if (error.message.includes('Invalid') || error.message.includes('expired')) {
+                statusCode = 401;
+                errorMessage = 'invalid or expired refresh token';
+            } else if (error.message.includes('not found')) {
+                statusCode = 404;
+                errorMessage = 'refresh token not found';
+            } else if (error.message.includes('Device mismatch')) {
+                statusCode = 403;
+                errorMessage = 'device mismatch - please sign in again';
+            }
+
+            res.status(statusCode).json({
+                error: errorMessage,
+                details: 'please sign in again to get new tokens'
+            });
+        }
+    }
 }
 
 module.exports = AuthController;

@@ -122,26 +122,24 @@ class AuthService {
                         });
                     }
                 } catch (error) {
-                    console.error('error blocking invalid token:', error);
+                    console.warn('error blocking invalid token:', error);
                 }
             }
             throw error;
         }
     }
-    static async cleanExpiredTokens() {
+    static async cleanExpiredToken() {
         try {
-            const thirtyDaysAgo = new Date();
+            const thirtyDaysAgo = Date.now();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             const result = await prisma.token.deleteMany({
-                where: {
-                    createdAt: {
-                        lt: thirtyDaysAgo
-                    }
-                }
+               where: {
+                   lt: thirtyDaysAgo
+               }
             });
             return result.count;
         } catch (error) {
-            console.error('token cleanup error:', error);
+            console.warn('cleaning expired token error: ', error);
             return 0;
         }
     }

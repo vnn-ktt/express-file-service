@@ -13,7 +13,7 @@ class UserController {
                 userId: req.user.id,
             })
         } catch (error) {
-            console.error('get user error: ', error);
+            console.warn('get user error: ', error);
             res.status(500).json({
                 error: 'error with getting user info'
             });
@@ -43,7 +43,7 @@ class UserController {
                 message: 'successfully logged out'
             });
         } catch (error) {
-            console.error('logout error: ', error);
+            console.warn('logout error: ', error);
             res.status(500).json({
                 error: 'logout error'
             })
@@ -72,7 +72,7 @@ class UserController {
                 blockedTokens: result.count
             });
         } catch (error) {
-            console.error('logoutAllDevices error: ', error);
+            console.warn('logoutAllDevices error: ', error);
             res.status(500).json({
                 error: 'error with logout on all devices'
             });
